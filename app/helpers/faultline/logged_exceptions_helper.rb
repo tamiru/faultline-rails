@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Faultline
   module LoggedExceptionsHelper
     def pretty_exception_date(exception)
@@ -18,7 +20,7 @@ module Faultline
     end
 
     def page_title(text)
-      title = [controller.application_name.presence, text].compact.join(" :: ")
+      title = [Faultline.application_name.presence, text].compact.join(" :: ")
       content_for(:title, title)
     end
 

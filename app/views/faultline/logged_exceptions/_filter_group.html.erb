@@ -1,10 +1,9 @@
-<div class="mt-6">
-  <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-500"><%= title %></h3>
-  <nav class="mt-2 max-h-40 space-y-1 overflow-y-auto">
+<div>
+  <h3><%= title %></h3>
+  <nav class="fl-nav fl-nav-scroll">
     <% values.each do |value| %>
-      <%= link_to value, query_logged_exceptions_path(parameter => value),
-        class: "block truncate rounded-lg px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-        data: { turbo_frame: "exceptions" } %>
+      <li><%= link_to value, query_logged_exceptions_path(parameter => value),
+        data: { turbo_frame: "exceptions" } %></li>
     <% end %>
   </nav>
 </div>

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Faultline
   class LoggedException < ApplicationRecord
     self.table_name = "faultline_logged_exceptions"
@@ -5,7 +7,8 @@ module Faultline
 
     class << self
       def create_from_exception(controller, exception, data)
-        message = "#{exception.message.inspect}\n* Extra Data\n\n#{data}" unless data.blank?
+        message = exception.message.to_s
+        message += "\n* Extra Data\n\n#{data}" unless data.blank?
         create!(
           exception_class: exception.class.name,
           controller_name: controller.controller_path,
@@ -36,7 +39,7 @@ module Faultline
     end
 
     def backtrace=(trace)
-      trace = sanitize_backtrace(trace) * "\n" unless trace.is_a?(String)
+      trace = sanitize_backtrace(trace) unless trace.is_a?(String)
       write_attribute :backtrace, trace
     end
 
@@ -45,17 +48,18 @@ module Faultline
         write_attribute :request, request
       else
         max = request.env.keys.max { |a, b| a.length <=> b.length }
-        env = request.env.keys.sort.inject [] do |env, key|
-          env << '* ' + ("%-*s: %s" % [max.length, key, request.env[key].to_s.strip])
+        env = request.env.keys.sort.inject [] do |memo, key|
+          memo << "* %-*s: %s" % [max.length, key, request.env[key].to_s.strip]
         end
-        write_attribute(:environment, (env << "* Process: #{$$}" << "* Server : #{self.class.host_name}") * "\n")
+        write_attribute(:environment, (env << "* Process: #{$$}" << "* Server : #{self.class.host_name}").join("\n"))
 
+        method_str = request.get? ? "" : " #{request.method.to_s.upcase}"
         write_attribute(:request, [
-          "* URL:#{" #{request.method.to_s.upcase}" unless request.get?} #{request.protocol}#{request.env["HTTP_HOST"]}#{request.fullpath}",
+          "* URL:#{method_str} #{request.protocol}#{request.env["HTTP_HOST"]}#{request.fullpath}",
           "* Format: #{request.format.to_s}",
           "* Parameters: #{request.parameters.inspect}",
           "* Rails Root: #{rails_root}"
-        ] * "\n")
+        ].join("\n"))
       end
     end
 
@@ -77,8 +81,13 @@ module Faultline
     @@backtrace_regex = /^#{Regexp.escape(@@rails_root)}/
 
     def sanitize_backtrace(trace)
+      return "" if trace.nil?
+      return trace unless trace.respond_to?(:reject)
+
       gem_path = Bundler.bundle_path.to_s
-      trace.reject { |line| line.include?(gem_path) }.collect { |line| Pathname.new(line.gsub(@@backtrace_regex, "[RAILS_ROOT]")).cleanpath.to_s }
+      trace.reject { |line| line.include?(gem_path) }
+           .collect { |line| Pathname.new(line.gsub(@@backtrace_regex, "[RAILS_ROOT]")).cleanpath.to_s }
+           .join("\n")
     end
 
     def rails_root

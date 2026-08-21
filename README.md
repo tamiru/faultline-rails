@@ -7,7 +7,7 @@ The dashboard is server-rendered and progressively enhanced with:
 - Turbo Frames for filtering and opening exception details without full-page navigation.
 - Turbo Streams for deleting one, many, or all exceptions.
 - Stimulus for loading state and small interaction behavior.
-- Tailwind-compatible utility classes for a responsive dashboard UI.
+- Built-in CSS for a responsive dashboard UI that works out of the box.
 
 ## Requirements
 
@@ -24,24 +24,22 @@ Add Faultline to your application:
 gem "faultline-rails"
 ```
 
-Install the dependencies and copy the engine migration:
+Run the install generator to set up everything in one step:
 
 ```bash
 bundle install
-bin/rails app:faultline:install:migrations
+bin/rails generate faultline:install
 bin/rails db:migrate
 ```
 
-Mount the dashboard in your application:
-
-```ruby
-# config/routes.rb
-Rails.application.routes.draw do
-  mount Faultline::Engine => "/faultline"
-end
-```
+This will:
+1. Copy the database migration with proper indexes.
+2. Create a configuration initializer at `config/initializers/faultline.rb`.
+3. Mount the engine in your routes.
 
 The dashboard is now available at `/faultline`.
+
+> **Note:** The generator mounts the engine at `/faultline` by default. You can change the mount path by editing `config/routes.rb`.
 
 ## Start logging exceptions
 
@@ -58,41 +56,94 @@ Faultline logs the exception and then re-raises it so Rails keeps its normal err
 
 ## Protect the dashboard
 
-The dashboard contains sensitive information, including request parameters, environment variables, and source paths. Do not expose it to unauthenticated public users.
+The dashboard contains sensitive information, including request parameters, environment variables, and source paths. **Do not expose it to unauthenticated public users.**
 
-Attach your application's authorization callback:
+By default, the dashboard returns `403 Forbidden` for all requests. Configure authentication in your initializer:
 
 ```ruby
 # config/initializers/faultline.rb
 Rails.application.config.to_prepare do
-  Faultline::LoggedExceptionsController.before_action :require_admin!
+  Faultline.configure do |config|
+    config.auth_block = lambda do |controller|
+      # Return true if the user is authorized to view the dashboard.
+      # Examples:
+      controller.authenticate_user!  # Devise
+      # controller.current_user&.admin?  # Custom auth
+      # false  # Block everyone (default)
+    end
+  end
 end
 ```
 
-Replace `require_admin!` with the authentication method provided by your application. You can also configure a policy, basic authentication, or an internal-only route at the host application level.
+## Configuration
 
-## Rails 8 frontend setup
+Configure Faultline through the block-style DSL in your initializer:
 
-Faultline includes `turbo-rails` and `stimulus-rails` as dependencies. Install the host application's Hotwire entry points when needed:
+```ruby
+# config/initializers/faultline.rb
+Rails.application.config.to_prepare do
+  Faultline.configure do |config|
+    # Dashboard title
+    config.application_name = "Acme"
+
+    # Items per page (default: 30)
+    config.per_page = 50
+
+    # Authentication block (see "Protect the dashboard" above)
+    config.auth_block = lambda do |controller|
+      controller.current_user&.admin?
+    end
+  end
+end
+```
+
+You can also attach additional application data to each recorded exception:
+
+```ruby
+ApplicationController.exception_data = lambda do |controller|
+  {
+    request_id: controller.request.request_id,
+    user_id: controller.current_user&.id
+  }
+end
+```
+
+Exclude trusted private networks from the dashboard's local-request handling:
+
+```ruby
+class ApplicationController < ActionController::Base
+  include Faultline::ExceptionLoggable
+
+  consider_local "10.0.0.0/8", "192.168.0.0/16"
+end
+```
+
+Rails' `filter_parameters` configuration is respected before request parameters are stored.
+
+## Frontend setup
+
+### Hotwire (default)
+
+Faultline includes `turbo-rails` and `stimulus-rails` as dependencies. If your Rails app already has Hotwire installed (the default for Rails 8), no extra setup is needed.
+
+If you need to install Hotwire:
 
 ```bash
 bin/rails turbo:install
 bin/rails stimulus:install
 ```
 
-The default Rails 8 import-map setup will load Faultline's Stimulus controller through the engine asset pipeline. If your application uses a JavaScript bundler, register the controller from `app/javascript/controllers/faultline_controller.js` in your Stimulus application:
+### Styling
 
-```javascript
-import FaultlineController from "./faultline_controller"
+Faultline ships with its own built-in CSS stylesheet that works out of the box. No Tailwind configuration is required.
 
-application.register("faultline", FaultlineController)
+If your application uses Tailwind CSS and you want Faultline to use your Tailwind theme instead, you can configure the gem's view directory as a Tailwind source. Use the absolute path returned by Bundler:
+
+```bash
+bundle show faultline-rails
 ```
 
-## Tailwind setup
-
-Faultline's dashboard uses Tailwind utility classes. Add the gem's view directory to the sources scanned by your Tailwind build; otherwise the host application will purge the dashboard classes.
-
-For Tailwind CSS v4, add a source entry to the application's Tailwind stylesheet. Use the absolute path returned by Bundler for the installed gem:
+For Tailwind CSS v4, add a source entry:
 
 ```css
 @import "tailwindcss";
@@ -111,42 +162,6 @@ module.exports = {
   ]
 }
 ```
-
-You can find the installed path with:
-
-```bash
-bundle show faultline-rails
-```
-
-## Configuration
-
-Set a title for the dashboard and attach additional application data to each record:
-
-```ruby
-# config/initializers/faultline.rb
-Rails.application.config.to_prepare do
-  Faultline::LoggedExceptionsController.application_name = "Acme"
-
-  ApplicationController.exception_data = lambda do |controller|
-    {
-      request_id: controller.request.request_id,
-      user_id: controller.current_user&.id
-    }
-  end
-end
-```
-
-Exclude trusted private networks from the dashboard's local-request handling:
-
-```ruby
-class ApplicationController < ActionController::Base
-  include Faultline::ExceptionLoggable
-
-  consider_local "10.0.0.0/8", "192.168.0.0/16"
-end
-```
-
-Rails' `filter_parameters` configuration is respected before request parameters are stored.
 
 ## Dashboard features
 

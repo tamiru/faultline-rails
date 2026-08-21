@@ -1,45 +1,45 @@
-<div id="exceptions-content" class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-  <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-5 py-4">
+<div id="exceptions-content" class="fl-card">
+  <div class="fl-detail-header">
     <div>
-      <h2 class="text-lg font-semibold text-slate-900">
+      <h2>
         <%= t(".heading") %>
         <% if filtered? %>
-          <span class="font-normal text-slate-500">(<%= t(".filtered") %>)</span>
+          <span style="font-weight: 400; color: var(--fl-text-secondary);">(<%= t(".filtered") %>)</span>
         <% end %>
       </h2>
-      <p class="mt-1 text-sm text-slate-500"><%= t(".count", count: @exceptions.total_entries) %></p>
+      <p class="fl-detail-time" style="margin-top: 0.25rem;"><%= t(".count", count: @exceptions.total_entries) %></p>
     </div>
 
     <%= link_to t(".delete_visible"), destroy_all_logged_exceptions_path(params_filters),
-      class: "rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-700 hover:bg-red-50",
+      class: "fl-btn fl-btn-outline fl-btn-sm",
       data: { turbo_method: :post, turbo_confirm: t(".confirm_delete_visible"), turbo_stream: true } %>
   </div>
 
   <% if @exceptions.empty? %>
-    <div class="px-5 py-16 text-center text-sm text-slate-500"><%= t(".empty") %></div>
+    <div class="fl-empty"><%= t(".empty") %></div>
   <% else %>
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-slate-200">
-        <thead class="bg-slate-50">
+    <div class="fl-table-wrap">
+      <table class="fl-table">
+        <thead>
           <tr>
-            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"><%= t(".exception") %></th>
-            <th class="px-5 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500"><%= t(".date") %></th>
-            <th class="px-5 py-3"><span class="sr-only"><%= t(".actions") %></span></th>
+            <th><%= t(".exception") %></th>
+            <th><%= t(".date") %></th>
+            <th><span class="sr-only"><%= t(".actions") %></span></th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-slate-100">
+        <tbody>
           <% @exceptions.each do |exception| %>
-            <tr id="<%= dom_id(exception) %>" class="group hover:bg-slate-50">
-              <td class="max-w-2xl px-5 py-4 align-top">
+            <tr id="<%= dom_id(exception) %>">
+              <td>
                 <%= link_to exception.name, logged_exception_path(exception),
-                  class: "font-medium text-indigo-700 hover:text-indigo-900 hover:underline",
+                  class: "fl-name",
                   data: { turbo_frame: "exception-details" } %>
-                <p class="mt-1 truncate text-sm text-slate-600"><%= exception.message %></p>
+                <p class="fl-msg"><%= exception.message %></p>
               </td>
-              <td class="whitespace-nowrap px-5 py-4 align-top text-sm text-slate-500"><%= pretty_exception_date(exception) %></td>
-              <td class="whitespace-nowrap px-5 py-4 text-right align-top">
+              <td class="fl-date"><%= pretty_exception_date(exception) %></td>
+              <td class="fl-actions">
                 <%= link_to t(".delete"), logged_exception_path(exception),
-                  class: "text-sm font-medium text-red-600 hover:text-red-800 hover:underline",
+                  class: "fl-delete-link",
                   data: { turbo_method: :delete, turbo_confirm: t(".confirm_delete"), turbo_stream: true } %>
               </td>
             </tr>
@@ -49,7 +49,7 @@
     </div>
   <% end %>
 
-  <div class="faultline-pagination border-t border-slate-200 px-5 py-4 text-sm">
+  <div class="fl-pagination">
     <%= will_paginate @exceptions, params: { controller: "logged_exceptions", action: "index" }.merge(params_filters) %>
   </div>
 </div>

@@ -5,9 +5,31 @@ require "will_paginate"
 require "ipaddr"
 require "socket"
 require "faultline/version"
+require "faultline/configuration"
 require "faultline/engine"
 
 module Faultline
+  class << self
+    attr_writer :configuration
+
+    def configuration
+      @configuration ||= Configuration.new
+    end
+
+    def configure
+      yield(configuration)
+    end
+
+    # Backward-compatible accessor for application_name
+    def application_name
+      configuration.application_name
+    end
+
+    def application_name=(value)
+      configuration.application_name = value
+    end
+  end
+
   # Copyright (c) 2005 Jamis Buck
   #
   # Permission is hereby granted, free of charge, to any person obtaining
@@ -71,7 +93,13 @@ module Faultline
     end
 
     def log_exception(exception)
-      deliverer = self.class.exception_data
+      # Support both the legacy class_attribute and the new configuration DSL
+      deliverer = if self.class.exception_data
+                    self.class.exception_data
+                  elsif Faultline.configuration.exception_data
+                    Faultline.configuration.exception_data
+                  end
+
       data = case deliverer
              when nil    then {}
              when Symbol then send(deliverer)

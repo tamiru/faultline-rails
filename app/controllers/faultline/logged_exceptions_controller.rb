@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 module Faultline
   class LoggedExceptionsController < ApplicationController
-    cattr_accessor :application_name
+    before_action :faultline_require_auth!
 
     helper_method :params_filters
 
@@ -73,6 +75,13 @@ module Faultline
 
     private
 
+    def faultline_require_auth!
+      auth_block = Faultline.configuration.auth_block
+      return if auth_block&.call(self)
+
+      head :forbidden
+    end
+
     def params_filters
       {
         query: params[:query],
@@ -83,7 +92,7 @@ module Faultline
     end
 
     def filtered_exceptions
-      filtered_scope.paginate(page: params[:page], per_page: 30)
+      filtered_scope.paginate(page: params[:page], per_page: Faultline.configuration.per_page || 30)
     end
 
     def filtered_scope

@@ -1,5 +1,3 @@
-<div class="mt-6 border-t border-slate-200 pt-5">
-  <%= link_to feed_logged_exceptions_path(format: :rss), class: "text-sm font-medium text-indigo-700 hover:underline" do %>
-    <%= t(".rss_feed") %>
-  <% end %>
+<div class="fl-feed">
+  <%= link_to t(".rss_feed"), feed_logged_exceptions_path(format: :rss) %>
 </div>

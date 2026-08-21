@@ -2,7 +2,7 @@ xml.instruct! :xml, :version=>"1.0", :encoding=>"UTF-8"
 
 xml.rss "version" => "2.0" do
   xml.channel do
-    xml.title "#{Faultline::LoggedExceptionsController.application_name}"
+    xml.title Faultline.application_name
     xml.link url_for(:only_path => false, :skip_relative_url_root => false)
     xml.language "en-us"
     xml.ttl "60"
