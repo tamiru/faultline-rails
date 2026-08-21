@@ -1,0 +1,6 @@
+<%= turbo_stream.replace "exceptions" do %>
+  <%= turbo_frame_tag "exceptions" do %>
+    <%= render "exceptions" %>
+  <% end %>
+<% end %>
+<%= turbo_stream.update "exception-details", "" %>

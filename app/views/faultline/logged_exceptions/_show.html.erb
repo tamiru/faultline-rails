@@ -1,0 +1,37 @@
+<div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-4">
+  <div>
+    <p class="text-sm text-slate-500"><%= @exception.created_at.strftime(Time::DATE_FORMATS[:exc_full]) %></p>
+    <h2 class="mt-1 break-words text-xl font-semibold text-slate-900"><%= @exception.name %></h2>
+  </div>
+  <button type="button" class="rounded-lg px-3 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100" data-action="click->faultline#closeDetails">
+    <%= t(".close") %>
+  </button>
+</div>
+
+<div class="mt-5 space-y-5 text-sm text-slate-700">
+  <section>
+    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><%= t(".request") %></h3>
+    <div class="overflow-x-auto rounded-lg bg-slate-50 p-4"><%= pretty_format(@exception.request) %></div>
+  </section>
+
+  <section>
+    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><%= t(".message") %></h3>
+    <div class="rounded-lg bg-slate-50 p-4"><%= simple_format(@exception.message) %></div>
+  </section>
+
+  <section>
+    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><%= t(".backtrace") %></h3>
+    <pre class="max-h-96 overflow-auto rounded-lg bg-slate-950 p-4 text-xs leading-5 text-slate-100"><%= @exception.backtrace %></pre>
+  </section>
+
+  <section>
+    <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500"><%= t(".environment") %></h3>
+    <div class="overflow-x-auto rounded-lg bg-slate-50 p-4"><%= pretty_format(@exception.environment) %></div>
+  </section>
+</div>
+
+<div class="mt-6 border-t border-slate-200 pt-4">
+  <%= link_to t(".delete"), logged_exception_path(@exception),
+    class: "text-sm font-medium text-red-600 hover:text-red-800 hover:underline",
+    data: { turbo_method: :delete, turbo_confirm: t(".confirm_delete"), turbo_stream: true } %>
+</div>

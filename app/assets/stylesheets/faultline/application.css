@@ -1,0 +1,33 @@
+/*
+ * Faultline's views use Tailwind utility classes. Add the gem's view path to
+ * the host application's Tailwind sources so those classes are compiled.
+ *
+ * This small fallback keeps will_paginate usable when a host app has not yet
+ * added Tailwind's pagination styles.
+ */
+.faultline-pagination .pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.faultline-pagination .pagination a,
+.faultline-pagination .pagination span {
+  padding: 0.35rem 0.65rem;
+  border-radius: 0.5rem;
+}
+
+.faultline-pagination .pagination a {
+  color: #4338ca;
+}
+
+.faultline-pagination .pagination a:hover {
+  background: #eef2ff;
+}
+
+.faultline-pagination .pagination .current {
+  background: #4f46e5;
+  color: white;
+  font-weight: 600;
+}

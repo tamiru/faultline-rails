@@ -1,0 +1,47 @@
+en:
+  faultline:
+    logged_exceptions:
+      index:
+        title: Logged Exceptions
+        subtitle: Review, filter, and remove application exceptions.
+        filters: Filters
+        latest_exceptions: Latest Exceptions
+        exception: Exception
+        controller_action: Controller / Action
+        dates: Dates
+        today: Today
+        last_few_days: Last few days
+        last_7_days: Last 7 days
+        last_30_days: Last 30 days
+        clear_history: Clear history
+        confirm_clear: Clear the complete exception history?
+        search: Search
+        search_placeholder: Search messages
+        find: Find
+        loading: Loading exceptions…
+        select_exception: Select an exception to inspect its details.
+      _exceptions:
+        heading: Exceptions
+        filtered: filtered
+        count: "%{count} total"
+        empty: No exceptions match these filters.
+        exception: Exception
+        date: Date
+        actions: Actions
+        delete: Delete
+        delete_visible: Delete visible
+        confirm_delete: Delete this exception?
+        confirm_delete_visible: Delete all visible exceptions?
+      _show:
+        close: Close
+        request: Request
+        message: Message
+        backtrace: Backtrace
+        environment: Environment
+        delete: Delete exception
+        confirm_delete: Delete this exception?
+      _feed:
+        rss_feed: Subscribe to the RSS feed
+      show:
+        title: Logged Exception
+
