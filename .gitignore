@@ -1,4 +1,5 @@
 /.bundle/
+/.idea/
 /doc/
 /log/*.log
 /pkg/
